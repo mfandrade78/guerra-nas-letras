@@ -154,8 +154,8 @@ while jogando:
     nave.desenhar(tela)
 
     linhas_controles = [
-        (f"➡️ (move para direita): {contagem_teclas[pygame.K_RIGHT]}", amarelo),
-        (f"⬅️ (move para esquerda): {contagem_teclas[pygame.K_LEFT]}", amarelo),
+        (f"> (move para direita): {contagem_teclas[pygame.K_RIGHT]}", amarelo),
+        (f"< (move para esquerda): {contagem_teclas[pygame.K_LEFT]}", amarelo),
         (f"Espaço (dispara): {contagem_teclas[pygame.K_SPACE]}", amarelo),
     ]
     for indice, (linha, cor) in enumerate(linhas_controles):
