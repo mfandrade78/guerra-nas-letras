@@ -1,7 +1,7 @@
 import pygame
 import math
 from configuracoes import (
-    largura, altura, preto, branco, amarelo, verde, fonte_gigante, fonte_media, fonte_pequena, som_acerto, som_erro, fases, intervalos_spawn, multiplicadores_velocidade, chances_letra_certa, ESTADO_PAUSADO, ESTADO_JOGANDO, ESTADO_VITORIA
+    largura, altura, preto, branco, amarelo, verde, fonte_gigante, fonte_media, fonte_pequena, fonte_controles, som_acerto, som_erro, fases, intervalos_spawn, multiplicadores_velocidade, chances_letra_certa, ESTADO_PAUSADO, ESTADO_JOGANDO, ESTADO_VITORIA
 )
 from entidades import Nave, Projetil, LetraFlutuante
 
@@ -24,6 +24,11 @@ projeteis = []
 letras = []
 tempo_spawn = 0
 estado_jogo = ESTADO_PAUSADO # o jogo começa pausado, esperando ENTER
+contagem_teclas = {
+    pygame.K_LEFT: 0,
+    pygame.K_RIGHT: 0,
+    pygame.K_SPACE: 0,
+}
 
 def iniciar_fase(indice):
     """Configura todas as variáveis globais para a fase indicada"""
@@ -57,6 +62,8 @@ while jogando:
         if evento.type == pygame.QUIT: 
             jogando = False
         if evento.type == pygame.KEYDOWN:
+            if evento.key in contagem_teclas:
+                contagem_teclas[evento.key] += 1
             if evento.key == pygame.K_SPACE and estado_jogo  == ESTADO_JOGANDO and len(letras_restantes) > 0:
                 # dispara o projétil a partir do bico da nave
                 projeteis.append(Projetil(nave.x + nave.largura // 2, nave.y))
@@ -145,6 +152,19 @@ while jogando:
     for l in letras: l.desenhar(tela)
     for p in projeteis: p.desenhar(tela)
     nave.desenhar(tela)
+
+    texto_controles = fonte_controles.render(
+        "-> (move para direita); <- (move para esquerda); espaço (dispara)",
+        True, branco
+    )
+    tela.blit(texto_controles, texto_controles.get_rect(center=(largura // 2, 91)))
+    texto_contagem = fonte_controles.render(
+        f"Direita: {contagem_teclas[pygame.K_RIGHT]}  |  "
+        f"Esquerda: {contagem_teclas[pygame.K_LEFT]}  |  "
+        f"Espaço: {contagem_teclas[pygame.K_SPACE]}",
+        True, amarelo
+    )
+    tela.blit(texto_contagem, texto_contagem.get_rect(center=(largura // 2, 114)))
 
     # 3- mensagens de pausa / vitória final
     if estado_jogo == ESTADO_PAUSADO:

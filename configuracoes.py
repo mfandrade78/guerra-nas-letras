@@ -28,6 +28,7 @@ rosa = (255, 100, 180)
 fonte_gigante = pygame.font.SysFont("Arial", 45, bold=True)
 fonte_media = pygame.font.SysFont("Arial", 32, bold=True) 
 fonte_pequena = pygame.font.SysFont("Arial", 24, bold=True)
+fonte_controles = pygame.font.SysFont("Arial", 18, bold=True)
 
 # efeitos sonoros
 def gerar_som(tipo):
