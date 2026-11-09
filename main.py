@@ -153,18 +153,14 @@ while jogando:
     for p in projeteis: p.desenhar(tela)
     nave.desenhar(tela)
 
-    texto_controles = fonte_controles.render(
-        "-> (move para direita); <- (move para esquerda); espaço (dispara)",
-        True, branco
-    )
-    tela.blit(texto_controles, texto_controles.get_rect(center=(largura // 2, 91)))
-    texto_contagem = fonte_controles.render(
-        f"Direita: {contagem_teclas[pygame.K_RIGHT]}  |  "
-        f"Esquerda: {contagem_teclas[pygame.K_LEFT]}  |  "
-        f"Espaço: {contagem_teclas[pygame.K_SPACE]}",
-        True, amarelo
-    )
-    tela.blit(texto_contagem, texto_contagem.get_rect(center=(largura // 2, 114)))
+    linhas_controles = [
+        (f"-> (move para direita): {contagem_teclas[pygame.K_RIGHT]}", branco),
+        (f"<- (move para esquerda): {contagem_teclas[pygame.K_LEFT]}", branco),
+        (f"Espaço (dispara): {contagem_teclas[pygame.K_SPACE]}", amarelo),
+    ]
+    for indice, (linha, cor) in enumerate(linhas_controles):
+        texto_controle = fonte_controles.render(linha, True, cor)
+        tela.blit(texto_controle, (20, 85 + indice * 24))
 
     # 3- mensagens de pausa / vitória final
     if estado_jogo == ESTADO_PAUSADO:
