@@ -21,3 +21,6 @@ build/
 
 # arquivos de especificação do PyInstaller
 main.spec
+
+# arquivos de especificação do BDD
+.venv/

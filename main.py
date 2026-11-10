@@ -1,5 +1,7 @@
 import pygame
 import math
+import sqlite3
+from banco_dados import registrar_vitoria
 from configuracoes import (
     largura, altura, preto, branco, amarelo, verde, fonte_gigante, fonte_media, fonte_pequena, fonte_controles, som_acerto, som_erro, fases, intervalos_spawn, multiplicadores_velocidade, chances_letra_certa, ESTADO_PAUSADO, ESTADO_JOGANDO, ESTADO_VITORIA
 )
@@ -24,11 +26,22 @@ projeteis = []
 letras = []
 tempo_spawn = 0
 estado_jogo = ESTADO_PAUSADO # o jogo começa pausado, esperando ENTER
+tempo_inicio_partida = None
+duracao_partida = None
+log_final = ""
+erro_banco = None
 contagem_teclas = {
     pygame.K_LEFT: 0,
     pygame.K_RIGHT: 0,
     pygame.K_SPACE: 0,
 }
+
+
+def formatar_duracao(segundos):
+    horas, resto = divmod(int(segundos), 3600)
+    minutos, segundos = divmod(resto, 60)
+    return f"{horas:02}:{minutos:02}:{segundos:02}"
+
 
 def iniciar_fase(indice):
     """Configura todas as variáveis globais para a fase indicada"""
@@ -69,6 +82,8 @@ while jogando:
                 projeteis.append(Projetil(nave.x + nave.largura // 2, nave.y))
             if evento.key == pygame.K_RETURN and estado_jogo == ESTADO_PAUSADO: 
                 # libera o início da fase que está aguardando
+                if tempo_inicio_partida is None:
+                    tempo_inicio_partida = pygame.time.get_ticks()
                 estado_jogo = ESTADO_JOGANDO
 
     # atualização de lógica (caso o jogo não tenha acabado)
@@ -123,6 +138,17 @@ while jogando:
                 iniciar_fase(fase_atual + 1) # prepara a próxima fase
                 estado_jogo = ESTADO_PAUSADO
             else: 
+                duracao_partida = (pygame.time.get_ticks() - tempo_inicio_partida) / 1000
+                log_final = (
+                    f"Fases concluídas: {len(fases)}/{len(fases)}\n"
+                    f"Movimentos: esquerda={contagem_teclas[pygame.K_LEFT]} | "
+                    f"direita={contagem_teclas[pygame.K_RIGHT]}\n"
+                    f"Disparos (espaço): {contagem_teclas[pygame.K_SPACE]}"
+                )
+                try:
+                    registrar_vitoria(duracao_partida, log_final)
+                except (OSError, sqlite3.Error) as erro:
+                    erro_banco = str(erro)
                 estado_jogo = ESTADO_VITORIA
 
     # renderização / desenhos
@@ -185,8 +211,27 @@ while jogando:
 
     elif estado_jogo == ESTADO_VITORIA:
         texto_vitoria = fonte_gigante.render("PARABÉNS! VOCÊ VENCEU!", True, verde)
-        rect_vitoria = texto_vitoria.get_rect(center=(largura // 2, altura // 2))
+        rect_vitoria = texto_vitoria.get_rect(center=(largura // 2, altura // 2 - 90))
         tela.blit(texto_vitoria, rect_vitoria)
+        texto_tempo = fonte_media.render(
+            f"Tempo total: {formatar_duracao(duracao_partida)}", True, branco
+        )
+        rect_tempo = texto_tempo.get_rect(center=(largura // 2, altura // 2 - 25))
+        tela.blit(texto_tempo, rect_tempo)
+
+        for indice, linha in enumerate(log_final.splitlines()):
+            texto_log = fonte_pequena.render(linha, True, amarelo)
+            rect_log = texto_log.get_rect(center=(largura // 2, altura // 2 + 15 + indice * 30))
+            tela.blit(texto_log, rect_log)
+
+        if erro_banco:
+            texto_status = fonte_controles.render(
+                f"Erro ao salvar o resultado: {erro_banco[:80]}", True, (255, 50, 50)
+            )
+        else:
+            texto_status = fonte_controles.render("Resultado salvo no banco de dados.", True, verde)
+        rect_status = texto_status.get_rect(center=(largura // 2, altura // 2 + 115))
+        tela.blit(texto_status, rect_status)
 
     # atualiza a tela
     pygame.display.flip()
