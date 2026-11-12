@@ -1,0 +1,58 @@
+name: Build Windows executable
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - dist/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-executable-main
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      - name: Build executable
+        run: >-
+          pyinstaller --noconfirm --clean --onefile --windowed
+          --name Guerra_nas_Letras
+          --distpath dist
+          --workpath build/pyinstaller
+          --specpath build
+          main.py
+
+      - name: Commit updated executable
+        shell: bash
+        run: |
+          git add dist/Guerra_nas_Letras.exe
+          if git diff --cached --quiet; then
+            echo "The executable is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Atualiza executável para o código mais recente"
+          git push
