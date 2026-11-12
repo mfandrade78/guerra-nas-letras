@@ -24,3 +24,6 @@ main.spec
 
 # arquivos de especificação do BDD
 .venv/
+
+# pasta para manter o arquivo executável do github sempre atualizado
+.github
